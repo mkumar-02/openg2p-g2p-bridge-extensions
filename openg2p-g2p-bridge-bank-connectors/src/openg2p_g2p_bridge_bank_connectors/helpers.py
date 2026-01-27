@@ -30,7 +30,7 @@ class ZambiaCSVHelper:
         narrative_3 = first_payload.cycle_code_mnemonic or "unknown_cycle"
 
         # Add timestamp for uniqueness
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S%f")
 
         filename = f"{narrative_2}_{narrative_3}_{timestamp}.csv"
         _logger.info(f"Generated filename: {filename}")
