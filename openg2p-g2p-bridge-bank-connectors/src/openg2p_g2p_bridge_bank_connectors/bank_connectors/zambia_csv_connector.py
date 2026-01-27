@@ -56,9 +56,8 @@ class ZambiaCSVConnector(BankConnectorInterface):
             csv_content: CSV content as string
         """
         try:
-            # Create the full object path, ensuring no double slashes
-            folder_path = _config.zambia_csv_folder_path.rstrip("/")
-            object_path = f"{folder_path}/{filename.lstrip('/')}"
+            # Create the full object path
+            object_path = f"{_config.zambia_csv_folder_path}/{filename}"
 
             # Convert string to bytes
             csv_bytes = csv_content.encode("utf-8")
@@ -89,10 +88,7 @@ class ZambiaCSVConnector(BankConnectorInterface):
             Presigned URL as string
         """
         try:
-            # Create the full object path, ensuring no double slashes
-            folder_path = _config.zambia_csv_folder_path.rstrip("/")
-            object_path = f"{folder_path}/{filename.lstrip('/')}"
-
+            object_path = f"{_config.zambia_csv_folder_path}/{filename}"
             presigned_url = self.minio_client.presigned_get_object(
                 bucket_name=_config.minio_bucket_name,
                 object_name=object_path,
