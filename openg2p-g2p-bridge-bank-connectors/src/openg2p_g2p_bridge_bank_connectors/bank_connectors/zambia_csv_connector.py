@@ -1,5 +1,6 @@
 import io
 import logging
+from datetime import timedelta
 from typing import List
 
 from minio import Minio
@@ -91,7 +92,7 @@ class ZambiaCSVConnector(BankConnectorInterface):
             presigned_url = self.minio_client.presigned_get_object(
                 bucket_name=_config.minio_bucket_name,
                 object_name=object_path,
-                expires=_config.minio_presigned_url_expiry,
+                expires=timedelta(days=_config.minio_presigned_url_expiry),
             )
             _logger.info(f"Generated presigned URL for {filename}: {presigned_url}")
             return presigned_url
@@ -140,7 +141,7 @@ class ZambiaCSVConnector(BankConnectorInterface):
             self.upload_csv_to_minio(filename, csv_content)
 
             # Create presigned URL
-            self.generate_presigned_url(filename)
+            presigned_url = self.generate_presigned_url(filename)
 
             _logger.info(f"Successfully uploaded CSV file: {filename}")
             return PaymentResponse(status=PaymentStatus.SUCCESS, error_code="")

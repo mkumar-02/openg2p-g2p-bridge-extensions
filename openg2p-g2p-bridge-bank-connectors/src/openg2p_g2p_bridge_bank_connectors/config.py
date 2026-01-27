@@ -24,5 +24,5 @@ class Settings(BaseSettings):
     minio_secret_key: str = "minioadmin"
     minio_bucket_name: str = "zambia-csv-files"
     minio_secure: bool = False
-    minio_presigned_url_expiry: int = 7  # 1 hour
+    minio_presigned_url_expiry: int = 7  # Days
     zambia_csv_folder_path: str = "disbursements"
