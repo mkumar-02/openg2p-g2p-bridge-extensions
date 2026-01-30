@@ -54,7 +54,15 @@ class ZambiaCSVHelper:
         writer = csv.writer(output)
 
         # Write headers
-        headers = ["Full Name", "NRC", "Phone", "Total Days", "Amount Due"]
+        headers = [
+            "Full Name",
+            "NRC",
+            "Phone",
+            "Local Authority",
+            "Name of Sites",
+            "Total Days",
+            "Amount Due",
+        ]
         writer.writerow(headers)
 
         # Write data rows
@@ -63,6 +71,12 @@ class ZambiaCSVHelper:
                 payload.beneficiary_name or "-",  # Full Name
                 payload.beneficiary_bank_code or "-",  # NRC
                 payload.beneficiary_phone_no or "-",  # Phone
+                (
+                    payload.compute_elements.get("district", "-") if payload.compute_elements else "-"
+                ),  # Local Authority
+                (
+                    payload.compute_elements.get("name_of_sites", "-") if payload.compute_elements else "-"
+                ),  # Name of all the sites
                 (
                     payload.compute_elements.get("number_of_days", "-") if payload.compute_elements else "-"
                 ),  # Total Days
