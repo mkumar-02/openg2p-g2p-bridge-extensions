@@ -14,4 +14,4 @@ class Initializer(BaseInitializer):
         MapperFactory()
         SPARMapperClient()
         SPARMapper()
-        KeymanagerCryptoHelper()
+        KeymanagerCryptoHelper(name="spar_mapper_crypto")
