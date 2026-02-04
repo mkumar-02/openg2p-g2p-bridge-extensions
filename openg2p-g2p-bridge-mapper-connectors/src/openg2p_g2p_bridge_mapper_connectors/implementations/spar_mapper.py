@@ -11,14 +11,14 @@ _logger = logging.getLogger("spar_mapper_impl")
 
 
 class SPARMapper(MapperInterface):
-    def resolve(self, resolve_request: ResolveRequest) -> ResolveResponse | None:
+    async def resolve(self, resolve_request: ResolveRequest) -> ResolveResponse | None:
         """
         Resolve the given request from Mapper and return the result.
         """
         _logger.info(f"Received resolve request: {resolve_request}")
         resolve_client = MapperResolveClient.get_component()
         try:
-            resolve_response = resolve_client.resolve_request(resolve_request)
+            resolve_response = await resolve_client.resolve_request(resolve_request)
             _logger.info("Resolve request completed successfully")
         except Exception as e:
             _logger.error(f"Failed to resolve the request: {e}")
