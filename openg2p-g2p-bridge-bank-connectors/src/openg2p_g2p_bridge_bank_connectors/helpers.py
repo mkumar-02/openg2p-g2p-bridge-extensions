@@ -6,6 +6,7 @@ from typing import List
 
 from .bank_interface.bank_connector_interface import DisbursementPaymentPayload
 from .config import Settings
+from .engine import get_district_from_registry, get_tasks_from_attendance
 
 _config = Settings.get_config()
 _logger = logging.getLogger(_config.logging_default_logger_name)
@@ -67,16 +68,20 @@ class ZambiaCSVHelper:
 
         # Write data rows
         for payload in payment_payloads:
+            # Get Local Authority (district) from registry database
+            local_authority = "-"
+            name_of_sites = "-"
+
+            if payload.beneficiary_id:
+                local_authority = get_district_from_registry(payload.beneficiary_id)
+                name_of_sites = get_tasks_from_attendance(payload.beneficiary_id)
+
             row = [
                 payload.beneficiary_name or "-",  # Full Name
                 payload.beneficiary_bank_code or "-",  # NRC
                 payload.beneficiary_phone_no or "-",  # Phone
-                (
-                    payload.compute_elements.get("district", "-") if payload.compute_elements else "-"
-                ),  # Local Authority
-                (
-                    payload.compute_elements.get("name_of_sites", "-") if payload.compute_elements else "-"
-                ),  # Name of all the sites
+                local_authority,  # Local Authority (from g2p_registry_worker)
+                name_of_sites,  # Name of Sites (from g2p_registry_monthly_attendance)
                 (
                     payload.compute_elements.get("number_of_days", "-") if payload.compute_elements else "-"
                 ),  # Total Days

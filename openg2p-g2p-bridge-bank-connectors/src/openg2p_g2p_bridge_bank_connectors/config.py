@@ -18,6 +18,14 @@ class Settings(BaseSettings):
     )
     bank_simulator_code: str = "ZAMBIA"
 
+    # Registry database connection settings for g2p_worker_registry
+    db_driver_registry: str = "postgresql"
+    db_username_registry: str = "postgres"
+    db_password_registry: str = "postgres"
+    db_hostname_registry: str = "localhost"
+    db_port_registry: int = 5432
+    db_dbname_registry: str = "registrydb"
+
     # Minio configuration for Zambia CSV Connector
     minio_endpoint: str = "localhost:9000"
     minio_access_key: str = "minioadmin"
