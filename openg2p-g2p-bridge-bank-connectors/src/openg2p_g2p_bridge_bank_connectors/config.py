@@ -16,15 +16,18 @@ class Settings(BaseSettings):
     funds_disbursement_url_example_bank: str = (
         "https://example-bank.dev.openg2p.org/api/example-bank/initiate_payment"
     )
-    bank_simulator_code: str = "ZAMBIA"
+    bank_simulator_code: str = "ACCESS_BANK"
+    disbursement_batch_control_callback_url: str = "https://your-app.com/webhook"
 
-    # Registry database connection settings for g2p_worker_registry
-    db_driver_registry: str = "postgresql"
-    db_username_registry: str = "postgres"
-    db_password_registry: str = "postgres"
-    db_hostname_registry: str = "localhost"
-    db_port_registry: int = 5432
-    db_dbname_registry: str = "registrydb"
+    # Access Bank Auth API configuration
+    access_bank_token_url: str = "https://access-bank.dev.openg2p.org/api/access-bank/token"
+    access_bank_client_id: str = "your_access_bank_client_id"
+    access_bank_mobile_wallet_payment_async_url: str = (
+        "https://access-bank.dev.openg2p.org/api/access-bank/mobile_wallet_payment"
+    )
+    access_bank_client_secret: str = "your_access_bank_client_secret"
+    access_bank_grant_type: str = "client_credentials"
+    access_bank_company_id: str = "COMP-001"
 
     # Minio configuration for Zambia CSV Connector
     minio_endpoint: str = "localhost:9000"
@@ -32,5 +35,4 @@ class Settings(BaseSettings):
     minio_secret_key: str = "minioadmin"
     minio_bucket_name: str = "zambia-csv-files"
     minio_secure: bool = False
-    minio_presigned_url_expiry: int = 7  # Days
     zambia_csv_folder_path: str = "disbursements"

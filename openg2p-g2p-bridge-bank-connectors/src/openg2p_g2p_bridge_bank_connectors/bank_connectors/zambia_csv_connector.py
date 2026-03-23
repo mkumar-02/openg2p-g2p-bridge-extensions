@@ -1,6 +1,5 @@
 import io
 import logging
-from datetime import timedelta
 from typing import List
 
 from minio import Minio
@@ -77,29 +76,6 @@ class ZambiaCSVConnector(BankConnectorInterface):
             _logger.error(f"Error uploading to Minio: {e}")
             raise
 
-    def generate_presigned_url(self, filename: str) -> str:
-        """
-        Generate a presigned URL for the uploaded CSV file.
-
-        Args:
-            filename: Name of the file
-
-        Returns:
-            Presigned URL as string
-        """
-        try:
-            object_path = f"{_config.zambia_csv_folder_path}/{filename}"
-            presigned_url = self.minio_client.presigned_get_object(
-                bucket_name=_config.minio_bucket_name,
-                object_name=object_path,
-                expires=timedelta(days=_config.minio_presigned_url_expiry),
-            )
-            _logger.info(f"Generated presigned URL for {filename}: {presigned_url}")
-            return presigned_url
-        except S3Error as e:
-            _logger.error(f"Error generating presigned URL: {e}")
-            raise
-
     def check_funds(self, account_number, currency, amount) -> CheckFundsResponse:
         """Not implemented for CSV connector - passing for now."""
         _logger.info("check_funds not implemented for ZambiaCSVConnector")
@@ -114,7 +90,9 @@ class ZambiaCSVConnector(BankConnectorInterface):
             error_code="",
         )
 
-    def initiate_payment(self, payment_payloads: List[DisbursementPaymentPayload]) -> PaymentResponse:
+    def initiate_payment(
+        self, disbursement_batch_control_id: str, payment_payloads: List[DisbursementPaymentPayload]
+    ) -> PaymentResponse:
         """
         Process payment payloads by creating a CSV file and uploading to Minio.
 
@@ -139,9 +117,6 @@ class ZambiaCSVConnector(BankConnectorInterface):
 
             # Upload to Minio
             self.upload_csv_to_minio(filename, csv_content)
-
-            # Create presigned URL
-            presigned_url = self.generate_presigned_url(filename)
 
             _logger.info(f"Successfully uploaded CSV file: {filename}")
             return PaymentResponse(status=PaymentStatus.SUCCESS, error_code="")

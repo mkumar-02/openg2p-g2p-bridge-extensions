@@ -53,7 +53,41 @@ class DisbursementPaymentPayload(BaseModel):
 
 class PaymentStatus(enum.Enum):
     SUCCESS = "SUCCESS"
+    QUEUED = "QUEUED"
+    PROCESSING = "PROCESSING"
+    FAILED = "FAILED"
+    TIMEOUT = "TIMEOUT"
     ERROR = "ERROR"
+    INSUFFICIENT_FUNDS = "INSUFFICIENT_FUNDS"
+
+
+class MobileMoneySingleDisbursementPaymentPayload(BaseModel):
+    referenceId: str
+    walletNumber: str
+    amount: float
+    currency: str
+    narration: Optional[str] = None
+
+
+class MobileMoneySinglePaymentResponse(BaseModel):
+    referenceId: str
+    statusCode: PaymentStatus
+    esbStatusCode: str  # TODO: Define a proper enum for ESB status codes
+    message: str
+
+
+class MobileMoneyBatchDisbursementPaymentPayload(BaseModel):
+    batchId: str
+    companyId: str
+    callbackUrl: str
+    entries: List[MobileMoneySingleDisbursementPaymentPayload]
+
+
+class MobileMoneyBatchPaymentResponse(BaseModel):
+    batchId: str
+    accepted: int
+    queued: bool
+    statusUrl: str
 
 
 class PaymentResponse(BaseModel):
@@ -68,7 +102,9 @@ class BankConnectorInterface(BaseService):
     def block_funds(self, account_number, currency, amount) -> BlockFundsResponse:
         raise NotImplementedError()
 
-    def initiate_payment(self, payment_payloads: List[DisbursementPaymentPayload]) -> PaymentResponse:
+    def initiate_payment(
+        self, disbursement_batch_control_id: str, payment_payloads: List[DisbursementPaymentPayload]
+    ) -> PaymentResponse:
         raise NotImplementedError()
 
     def retrieve_reconciliation_id(

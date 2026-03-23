@@ -130,7 +130,9 @@ class ExampleBankConnector(BankConnectorInterface):
             )
 
     def initiate_payment(
-        self, disbursement_payment_payloads: List[DisbursementPaymentPayload]
+        self,
+        disbursement_batch_control_id: str,
+        disbursement_payment_payloads: List[DisbursementPaymentPayload],
     ) -> PaymentResponse:
         _logger.info(f"Initiating payment for {len(disbursement_payment_payloads)} disbursements")
         try:

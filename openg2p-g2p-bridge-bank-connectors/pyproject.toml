@@ -18,6 +18,8 @@ classifiers = [
 dependencies = [
   "openg2p-g2p-bridge-models",
   "minio",
+  "httpx",
+  "requests",
 ]
 dynamic = ["version"]
 
