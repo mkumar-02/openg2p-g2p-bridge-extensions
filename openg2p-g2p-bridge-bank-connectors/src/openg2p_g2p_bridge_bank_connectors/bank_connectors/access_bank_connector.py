@@ -63,12 +63,13 @@ class AccessBankConnector(BankConnectorInterface):
                 MobileMoneySingleDisbursementPaymentPayload
             ] = []
             for payment_payload in payment_payloads:
+                _logger.info("Processing payment payload: {payment_payload}")
                 wallet_number = payment_payload.beneficiary_phone_no
                 if not wallet_number:
                     _logger.error(f"No wallet number found for payload {payment_payload.disbursement_id}")
                     continue
 
-                mobile_money_single_disbursement_payment_payloads.append(
+                mobile_money_single_disbursement_payment_payload = (
                     MobileMoneySingleDisbursementPaymentPayload(
                         referenceId=payment_payload.disbursement_id,
                         walletNumber=wallet_number,
@@ -78,6 +79,20 @@ class AccessBankConnector(BankConnectorInterface):
                         or f"Payment - {payment_payload.beneficiary_name or payment_payload.beneficiary_id}",
                     )
                 )
+
+                _logger.info(
+                    f"Created single payload: {mobile_money_single_disbursement_payment_payload.model_dump()}"
+                )
+                mobile_money_single_disbursement_payment_payloads.append(
+                    mobile_money_single_disbursement_payment_payload
+                )
+
+                _logger.info(
+                    f"Created MobileMoneySingleDisbursementPaymentPayload for disbursement ID: {payment_payload.disbursement_id}"
+                )
+            _logger.debug(
+                f"MobileMoneySingleDisbursementPaymentPayload: {mobile_money_single_disbursement_payment_payloads}"
+            )
 
             if not mobile_money_single_disbursement_payment_payloads:
                 _logger.error("No valid entries created from payment payloads")
@@ -90,6 +105,8 @@ class AccessBankConnector(BankConnectorInterface):
                 callbackUrl=_config.disbursement_batch_control_callback_url,
                 entries=mobile_money_single_disbursement_payment_payloads,
             )
+
+            _logger.debug(f"Constructed MobileMoneyBatchDisbursementPaymentPayload: {batch_payload}")
 
             # Make API call to Access Bank
             access_token = AccessBankHelper.get_access_token()
