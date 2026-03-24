@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     # Access Bank Auth API configuration
     access_bank_token_url: str = "https://access-bank.dev.openg2p.org/api/access-bank/token"
     access_bank_client_id: str = "your_access_bank_client_id"
-    access_bank_mobile_wallet_payment_async_url: str = (
+    access_bank_wallet_payment_batch_url: str = (
         "https://access-bank.dev.openg2p.org/api/access-bank/mobile_wallet_payment"
     )
     access_bank_client_secret: str = "your_access_bank_client_secret"
