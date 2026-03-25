@@ -63,7 +63,7 @@ class AccessBankConnector(BankConnectorInterface):
                 MobileMoneySingleDisbursementPaymentPayload
             ] = []
             for payment_payload in payment_payloads:
-                _logger.info("Processing payment payload: {payment_payload}")
+                _logger.info(f"Processing payment payload: {payment_payload}")
                 wallet_number = payment_payload.beneficiary_phone_no
                 if not wallet_number:
                     _logger.error(f"No wallet number found for payload {payment_payload.disbursement_id}")

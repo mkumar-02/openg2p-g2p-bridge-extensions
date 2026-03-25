@@ -22,11 +22,11 @@ class Settings(BaseSettings):
     # Access Bank Auth API configuration
     access_bank_token_url: str = "https://access-bank.dev.openg2p.org/api/access-bank/token"
     access_bank_client_id: str = "your_access_bank_client_id"
-    access_bank_wallet_payment_batch_url: str = (
-        "https://access-bank.dev.openg2p.org/api/access-bank/mobile_wallet_payment"
-    )
     access_bank_client_secret: str = "your_access_bank_client_secret"
     access_bank_grant_type: str = "client_credentials"
+
+    # Access Bank Wallet Payment API configuration
+    access_bank_wallet_payment_batch_url: str = "https://access-bank.dev.openg2p.org/api/v1/wallet/payments/batch"
     access_bank_company_id: str = "COMP-001"
 
     # Minio configuration for Zambia CSV Connector
