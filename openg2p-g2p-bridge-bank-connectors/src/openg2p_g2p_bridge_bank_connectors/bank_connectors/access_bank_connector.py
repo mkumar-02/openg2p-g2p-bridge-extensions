@@ -80,7 +80,7 @@ class AccessBankConnector(BankConnectorInterface):
                     "walletNumber": wallet_number,
                     "amount": payment_payload.payment_amount,
                     "currency": payment_payload.remitting_account_currency,
-                    "narration": payment_payload.disbursement_narration
+                    "narration": payment_payload.disbursement_narrative
                     or f"Payment - {payment_payload.beneficiary_name or payment_payload.beneficiary_id}",
                 }
 
