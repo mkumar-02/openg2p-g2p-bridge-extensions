@@ -12,6 +12,8 @@ from ..bank_interface.bank_connector_interface import (
     BlockFundsResponse,
     CheckFundsResponse,
     DisbursementPaymentPayload,
+    MobileMoneyBatchDisbursementPaymentPayload,
+    MobileMoneySingleDisbursementPaymentPayload,
     PaymentResponse,
     PaymentStatus,
 )
@@ -44,7 +46,6 @@ class AccessBankConnector(BankConnectorInterface):
         Process payment payloads using Access Bank's async wallet payment API.
 
         Args:
-            disbursement_batch_control_id: Batch control ID
             payment_payloads: List of DisbursementPaymentPayload objects
 
         Returns:
@@ -57,57 +58,74 @@ class AccessBankConnector(BankConnectorInterface):
             return PaymentResponse(status=PaymentStatus.ERROR, error_code="NO_PAYLOADS")
 
         try:
-            # Get access token
-            access_token = AccessBankHelper.get_access_token()
-
-            if not access_token:
-                _logger.error("Failed to get access token")
-                return PaymentResponse(status=PaymentStatus.ERROR, error_code="TOKEN_FAILED")
-
-            headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
-
-            # Create batch payload following the API structure
-            entries = []
+            # transform DisbursementPaymentPayload to MobileMoneySingleDisbursementPaymentPayload
+            mobile_money_single_disbursement_payment_payloads: List[
+                MobileMoneySingleDisbursementPaymentPayload
+            ] = []
             for payment_payload in payment_payloads:
-                _logger.info(f"Processing payment payload: {payment_payload}")
+                _logger.info("Processing payment payload: {payment_payload}")
                 wallet_number = payment_payload.beneficiary_phone_no
                 if not wallet_number:
                     _logger.error(f"No wallet number found for payload {payment_payload.disbursement_id}")
                     continue
 
-                entry = {
-                    "referenceId": payment_payload.disbursement_id,
-                    "walletNumber": wallet_number,
-                    "amount": payment_payload.payment_amount,
-                    "currency": payment_payload.remitting_account_currency,
-                    "narration": payment_payload.disbursement_narrative
-                    or f"Payment - {payment_payload.beneficiary_name or payment_payload.beneficiary_id}",
-                }
+                mobile_money_single_disbursement_payment_payload = (
+                    MobileMoneySingleDisbursementPaymentPayload(
+                        referenceId=payment_payload.disbursement_id,
+                        walletNumber=wallet_number,
+                        amount=payment_payload.payment_amount,
+                        currency=payment_payload.remitting_account_currency,
+                        narration=payment_payload.disbursement_narrative
+                        or f"Payment - {payment_payload.beneficiary_name or payment_payload.beneficiary_id}",
+                    )
+                )
 
-                _logger.info(f"Created entry: {entry}")
-                entries.append(entry)
+                _logger.info(
+                    f"Created single payload: {mobile_money_single_disbursement_payment_payload.model_dump()}"
+                )
+                mobile_money_single_disbursement_payment_payloads.append(
+                    mobile_money_single_disbursement_payment_payload
+                )
 
-            if not entries:
+                _logger.info(
+                    f"Created MobileMoneySingleDisbursementPaymentPayload for disbursement ID: {payment_payload.disbursement_id}"
+                )
+            _logger.debug(
+                f"MobileMoneySingleDisbursementPaymentPayload: {mobile_money_single_disbursement_payment_payloads}"
+            )
+
+            if not mobile_money_single_disbursement_payment_payloads:
                 _logger.error("No valid entries created from payment payloads")
                 return PaymentResponse(status=PaymentStatus.ERROR, error_code="NO_VALID_ENTRIES")
 
-            # Create batch payload
-            batch_payload = {
-                "batchId": disbursement_batch_control_id,
-                "companyId": _config.access_bank_company_id,
-                "callbackUrl": _config.disbursement_batch_control_callback_url,
-                "entries": entries,
-            }
+            # Optional callback URL - the application using this library can provide it
+            batch_payload = MobileMoneyBatchDisbursementPaymentPayload(
+                batchId=disbursement_batch_control_id,
+                companyId=_config.access_bank_company_id,
+                callbackUrl=_config.disbursement_batch_control_callback_url,
+                entries=mobile_money_single_disbursement_payment_payloads,
+            )
 
-            _logger.info(f"Sending batch payload to API: {batch_payload}")
+            _logger.debug(f"Constructed MobileMoneyBatchDisbursementPaymentPayload: {batch_payload}")
+
+            # Make API call to Access Bank
+            access_token = AccessBankHelper.get_access_token()
+
+            if not access_token:
+                _logger.error("Failed to get access token")
+                return {}
+
+            headers = {"Content-Type": "application/json", "Authorization": f"Bearer {access_token}"}
+
+            # Convert payload to dict for JSON serialization
+            payload_dict = batch_payload.model_dump(exclude_none=True)
 
             with httpx.Client(timeout=30.0) as client:
                 response = client.post(
-                    _config.access_bank_wallet_payment_batch_url, json=batch_payload, headers=headers
+                    _config.access_bank_wallet_payment_batch_url, json=payload_dict, headers=headers
                 )
 
                 _logger.info(f"Wallet payment API response status: {response.status_code}")
-                _logger.info(f"Response body: {response.text}")
 
                 if response.status_code == 202:
                     response_data = response.json()
